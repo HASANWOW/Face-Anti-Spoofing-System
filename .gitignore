@@ -1,0 +1,15 @@
+# Mengabaikan File Model AI (Ukurannya terlalu besar)
+models/*.pth
+models/*.pkl
+
+# Mengabaikan File Dataset (Ribuan gambar & video bikin berat)
+data/
+dataset/
+dataset_wajah/
+*.tar
+*.zip
+*.rar
+
+# Mengabaikan Cache Python
+__pycache__/
+*.pyc
