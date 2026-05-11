@@ -324,13 +324,20 @@ def main():
     trn_ds = OULUTarDataset(trn_samples, args.train_tar, args.frames, train_tf)
     val_ds = OULUTarDataset(val_samples, args.train_tar, args.frames, val_tf)
 
+    # === INI BARIS YANG SEMPAT HILANG TADI ===
     trn_loader = DataLoader(trn_ds, batch_size=args.batch_size, shuffle=True,  num_workers=0)
     val_loader = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False, num_workers=0)
+    # =========================================
 
     # Model
     print("\n  Membangun model MobileNetV2...")
     model     = build_model(pretrained=True).to(device)
-    criterion = nn.CrossEntropyLoss()
+    
+    # --- TAMBAHAN DARI TEMAN: Class Weight ---
+    weights = torch.tensor([1.0, 4.0]).to(device)
+    criterion = nn.CrossEntropyLoss(weight=weights)
+    # -----------------------------------------
+
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode="max", factor=0.5, patience=3
