@@ -4,7 +4,7 @@ from torchvision import models
 import cv2
 import numpy as np
 
-# MESIN UNIVERSAL DEEPPIXBIS
+# 1. KELAS ARSITEKTUR UNIVERSAL (Harus sama persis dengan yang di train)
 class DeepPixBisModel(nn.Module):
     def __init__(self, model_type="efficientnet"):
         super(DeepPixBisModel, self).__init__()
@@ -43,7 +43,8 @@ class DeepPixBisModel(nn.Module):
         global_score = torch.mean(flat_map, dim=1, keepdim=True)
         return pixel_map, global_score
 
-# DETEKTOR EVALUASI
+
+# 2. MESIN DETEKTOR UTAMA
 class FASDetector:
     def __init__(self, model_path, model_type="efficientnet"):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -52,6 +53,7 @@ class FASDetector:
         print(f"[INFO] Mengaktifkan Arsitektur DeepPixBis - {model_type.upper()}...")
         self.model = DeepPixBisModel(model_type=model_type)
         
+        # Load Bobot Hasil Training
         checkpoint = torch.load(model_path, map_location=self.device)
         if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
             self.model.load_state_dict(checkpoint['model_state_dict'])
@@ -77,6 +79,7 @@ class FASDetector:
         with torch.no_grad():
             pred_maps, pred_scores = self.model(img)
             conf = pred_scores.item()
+            
             label = "REAL" if conf >= 0.5 else "SPOOF"
             if label == "SPOOF":
                 conf = 1.0 - conf
