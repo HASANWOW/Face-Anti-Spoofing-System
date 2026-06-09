@@ -1,4 +1,3 @@
-# pyrefly: ignore [missing-import]
 import insightface
 from insightface.app import FaceAnalysis
 import numpy as np

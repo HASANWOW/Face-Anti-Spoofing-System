@@ -14,20 +14,17 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, models
 
-# 1. PARSER UNTUK AUTO-RUNNER
 def get_args():
     parser = argparse.ArgumentParser(description="Training DeepPixBis 3 Model")
     parser.add_argument("--model_type", type=str, default="efficientnet", choices=["mobilenet", "shufflenet", "efficientnet"])
     parser.add_argument("--epochs", type=int, default=15)
     return parser.parse_args()
 
-# 2. ARSITEKTUR DEEPPIXBIS UNIVERSAL (3 BACKBONE)
 class DeepPixBisModel(nn.Module):
     def __init__(self, model_type="efficientnet"):
         super(DeepPixBisModel, self).__init__()
         self.model_type = model_type
         
-        # Pilih Tubuh (Backbone)
         if model_type == "efficientnet":
             backbone = models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.DEFAULT)
             self.features = backbone.features
@@ -44,11 +41,9 @@ class DeepPixBisModel(nn.Module):
             )
             in_channels = 1024
             
-        # Freeze layer bawaan agar tidak rusak
         for param in self.features.parameters():
             param.requires_grad = False
             
-        # Kepala DeepPixBis (Pixel-wise Map 14x14)
         self.pixel_conv = nn.Conv2d(in_channels, 1, kernel_size=1, stride=1, padding=0)
         self.upsample = nn.Upsample(size=(14, 14), mode='bilinear', align_corners=False)
         self.score_fc = nn.Sequential(
@@ -67,7 +62,6 @@ class DeepPixBisModel(nn.Module):
         global_score = torch.mean(flat_map, dim=1, keepdim=True)
         return pixel_map, global_score
 
-# 3. DATASET LOADER DEEPPIXBIS
 class OULUDeepPixDataset(Dataset):
     def __init__(self, samples, tar_path, transform=None):
         self.samples = samples
@@ -93,7 +87,6 @@ class OULUDeepPixDataset(Dataset):
             img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
             if self.transform: img = self.transform(img)
             
-            # Target 14x14 (1 = REAL, 0 = SPOOF)
             target_map = torch.ones((1, 14, 14)) if label == 1 else torch.zeros((1, 14, 14))
             return img, target_map, torch.tensor([label], dtype=torch.float32)
         except:
@@ -113,7 +106,6 @@ def scan_tar(tar_path):
             samples.append((name, label))
     return samples
 
-# 4. TRAINING LOOP
 def main():
     args = get_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -139,7 +131,6 @@ def main():
     
     print(f"\n[START] Memulai Training Model: {args.model_type.upper()}")
     model = DeepPixBisModel(model_type=args.model_type).to(device)
-    #parameters size 
     total_params = sum(p.numel() for p in model.parameters())
     train_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"[INFO] Total Parameter Model: {total_params:,} | Parameter Dilatih: {train_params:,}")

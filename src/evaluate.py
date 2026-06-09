@@ -21,7 +21,6 @@ def evaluate():
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     model_file = os.path.join(BASE_DIR, f"fas_model_{args.model_type}.pth")
 
-    # Proteksi ganda: Cek apakah file ada di root atau di dalam folder 'models'
     if not os.path.exists(model_file):
         model_file = os.path.join(BASE_DIR, "models", f"fas_model_{args.model_type}.pth")
 
@@ -30,7 +29,6 @@ def evaluate():
         print("Pastikan hasil training DeepPixBis kamu sudah selesai dan filenya ada di direktori tersebut.")
         return
 
-    # Inisialisasi Detector dengan arsitektur DeepPixBis baru kita
     detector = FASDetector(model_file, model_type=args.model_type)
     
     results = {
@@ -38,7 +36,6 @@ def evaluate():
         "false": {"correct": 0, "total": 0}
     }
 
-    # Path ke Folder Dataset pengujian
     BASE_TEST_DIR = os.path.join(BASE_DIR, "data", "Oulu-NPU")
 
     for label_name in ["true", "false"]:
@@ -56,27 +53,21 @@ def evaluate():
             frame = cv2.imread(file_path)
             if frame is None: continue
             
-            # Melakukan prediksi berbasis peta piksel lokal
             label_pred, conf, _ = detector.predict(frame)
             results[label_name]["total"] += 1
             
-            # Cek ketepatan prediksi
             if label_name == "true" and label_pred == "REAL":
                 results[label_name]["correct"] += 1
             elif label_name == "false" and label_pred == "SPOOF":
                 results[label_name]["correct"] += 1
 
-    # Hitung Metrik ISO/IEC 30107-3
     true_total = results["true"]["total"]
     true_correct = results["true"]["correct"]
     false_total = results["false"]["total"]
     false_correct = results["false"]["correct"]
 
-    # BPCER: Salah menolak wajah asli
     bpcer = ((true_total - true_correct) / true_total * 100) if true_total > 0 else 0
-    # APCER: Kebobolan wajah palsu
     apcer = ((false_total - false_correct) / false_total * 100) if false_total > 0 else 0
-    # ACER: Rata-rata Error total
     acer = (bpcer + apcer) / 2
 
     print("\n" + "="*50)
@@ -90,7 +81,6 @@ def evaluate():
     print(f"3. ACER  (Average Error): {acer:.2f}%")
     print("="*50)
 
-    # Simpan Grafik Batang baru
     plt.figure(figsize=(8, 5))
     labels = ['BPCER', 'APCER', 'ACER']
     values = [bpcer, apcer, acer]

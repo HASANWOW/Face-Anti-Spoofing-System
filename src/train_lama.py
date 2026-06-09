@@ -30,7 +30,6 @@ def get_args():
                         help="Proporsi data validasi (default 20%)")
     parser.add_argument("--lr",         type=float, default=0.001)
     
-    # [MODIFIKASI] Tombol Saklar Model
     parser.add_argument("--model",      type=str, default="mobilenet", 
                         choices=["mobilenet", "shufflenet", "efficientnet"],
                         help="Pilih arsitektur model lightweight yang ingin dilatih")
@@ -209,7 +208,6 @@ class OULUTarDataset(Dataset):
         return img, torch.tensor(label, dtype=torch.long)
 
 
-# [MODIFIKASI] Pabrik Model dengan 3 Pilihan Lightweight CNN
 def build_model(model_name, num_classes=2):
     if model_name == "mobilenet":
         model = models.mobilenet_v2(weights=models.MobileNet_V2_Weights.DEFAULT)
@@ -229,7 +227,6 @@ def build_model(model_name, num_classes=2):
     else:
         raise ValueError(f"Model {model_name} tidak dikenali!")
 
-    # Hitung Ukuran Parameter untuk laporan
     total_params = sum(p.numel() for p in model.parameters())
     print("-" * 55)
     print(f"[*] Arsitektur Terpilih : {model_name.upper()}")
@@ -240,7 +237,7 @@ def build_model(model_name, num_classes=2):
 
 
 def run_epoch(model, loader, criterion, optimizer, device, is_train=True):
-    from tqdm import tqdm # Tambahan import tqdm yang terlewat
+    from tqdm import tqdm 
     if is_train:
         model.train()
     else:
@@ -297,13 +294,11 @@ def main():
         print("\n[ERROR] Tidak ada sampel ditemukan. Cek path --train_tar")
         return
 
-    # Mencegah error validasi pada dataset sangat kecil
     val_size    = max(1, int(len(all_samples) * args.val_split))
     val_samples = all_samples[:val_size]
     trn_samples = all_samples[val_size:]
     print(f"\n  Split → Train: {len(trn_samples)} | Val: {len(val_samples)}")
 
-    #  Transformasi 
     train_tf = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.RandomHorizontalFlip(),
@@ -326,10 +321,8 @@ def main():
     trn_loader = DataLoader(trn_ds, batch_size=args.batch_size, shuffle=True,  num_workers=0)
     val_loader = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False, num_workers=0)
 
-    # [MODIFIKASI] Memanggil Pabrik Model
     model = build_model(args.model).to(device)
     
-    # [MODIFIKASI] Mengembalikan Class Weight ke posisi Netral karena data diseimbangkan
     weights = torch.tensor([1.0, 1.0]).to(device)
     criterion = nn.CrossEntropyLoss(weight=weights)
 
@@ -347,7 +340,6 @@ def main():
     history_train_acc = []
     history_val_acc = []
 
-    # Dinamis Output Name
     final_output_path = args.output if args.output != "fas_model.pth" else f"fas_model_{args.model}.pth"
 
     for epoch in range(1, args.epochs + 1):
@@ -421,7 +413,6 @@ def main():
 
     plt.tight_layout()
     
-    # Dinamis Plot Name
     save_path_plot = f"training_metrics_{args.model}.png"
     plt.savefig(save_path_plot, dpi=300, bbox_inches='tight')
     print(f"[INFO] Sukses! Grafik standar paper telah disimpan di: {save_path_plot}")
