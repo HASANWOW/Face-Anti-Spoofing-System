@@ -55,12 +55,9 @@ def proses_visualisasi(image_path, label_nama):
     plt.axis('off')  
     
     plt.subplot(1, 2, 2)
+
     
-   
-    batas_merah = heatmap.max() 
-    
-    
-    plt.imshow(heatmap, cmap='jet', alpha=0.7, vmin=0.1, vmax=batas_merah)
+    plt.imshow(heatmap, cmap='jet', alpha=0.7, vmin=0.1, vmax=1)
     plt.title(f"Prediction: {label} ({conf:.2f})")
     plt.axis('off')  
     
@@ -69,4 +66,5 @@ def proses_visualisasi(image_path, label_nama):
 
 if __name__ == "__main__":
     proses_visualisasi("wajah_asli.jpeg", "real")
+    proses_visualisasi("wajah_spoof.jpeg","spoof")
    
