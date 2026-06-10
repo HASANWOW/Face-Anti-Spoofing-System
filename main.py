@@ -19,7 +19,7 @@ FAS_MODEL_PATH = os.path.join(BASE_DIR, "fas_model_efficientnet.pth")
 RECOG_MODEL_PATH = os.path.join(BASE_DIR, "models", "model_recognition_arcface.pkl")
 COSINE_THRESHOLD = 0.75
 FRAME_SKIP = 3
-FAS_CONFIDENCE_THRESHOLD = 0.50
+FAS_CONFIDENCE_THRESHOLD = 0.49
 
 print("[INFO] Memuat model FAS (EfficientNet) & ArcFace...")
 if not os.path.exists(FAS_MODEL_PATH):
